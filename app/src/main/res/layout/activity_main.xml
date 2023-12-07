@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.beautiful_pomodoro.MainActivity"
+    android:background="@drawable/gradiant_list"
+    android:id="@+id/layout">
+
+    <ImageButton
+        android:id="@+id/start_button"
+        android:layout_width="207dp"
+        android:layout_height="206dp"
+        android:layout_marginBottom="100dp"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/start_button" />
+
+    <ImageView
+        android:id="@+id/pomodoro_logo"
+        android:layout_width="385dp"
+        android:layout_height="304dp"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toTopOf="@+id/start_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/icono_3" />
+
+    <!--
+    <pl.droidsonroids.gif.GifImageView
+        android:id="@+id/pomodoroGif"
+        android:layout_width="382dp"
+        android:layout_height="256dp"
+        android:layout_weight="1"
+        android:src="@drawable/animated_pomodoro"
+        app:layout_constraintBottom_toTopOf="@+id/start_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.448"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.508" />
+        -->
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
