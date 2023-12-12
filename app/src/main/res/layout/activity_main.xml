@@ -8,28 +8,41 @@
     android:background="@drawable/gradiant_list"
     android:id="@+id/layout">
 
-    <ImageButton
-        android:id="@+id/start_button"
-        android:layout_width="207dp"
-        android:layout_height="206dp"
-        android:layout_marginBottom="100dp"
-        android:background="@null"
-        android:scaleType="fitCenter"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/start_button" />
-
     <ImageView
         android:id="@+id/pomodoro_logo"
         android:layout_width="385dp"
         android:layout_height="304dp"
+        android:layout_marginBottom="50dp"
         android:scaleType="fitXY"
-        app:layout_constraintBottom_toTopOf="@+id/start_button"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/icono_3" />
+
+    <TextView
+        android:id="@+id/timerText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/press_start_2p"
+        android:text="TextView"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@+id/pomodoro_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/start_button" />
+
+    <ImageButton
+        android:id="@+id/start_button"
+        android:layout_width="266dp"
+        android:layout_height="239dp"
+        android:layout_marginTop="50dp"
+        android:background="#00FFFFFF"
+        android:scaleType="fitXY"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/icono_3" />
+        app:srcCompat="@drawable/start_button" />
 
     <!--
     <pl.droidsonroids.gif.GifImageView
