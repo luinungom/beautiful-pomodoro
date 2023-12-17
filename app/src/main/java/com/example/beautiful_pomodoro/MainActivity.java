@@ -6,6 +6,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -14,10 +15,14 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
-    private int seconds = 0;
-    private int minutes = 0;
+
+    private byte seconds;
+    private byte minutes;
     private TextView timerText;
     private TimerTask timerTask;
+    private Timer timer;
+    private boolean running;
+    private boolean paused = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +31,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Assign visual elements to objects
         ConstraintLayout constraintLayout = findViewById(R.id.layout);
-        ImageButton startButton = findViewById(R.id.start_button);
+        ImageButton startButton = findViewById(R.id.startButton);
+        ImageButton pauseButton = findViewById(R.id.pauseButton);
+        Button stopButton = findViewById(R.id.stopButton);
         timerText = findViewById(R.id.timerText);
 
 
@@ -36,7 +43,10 @@ public class MainActivity extends AppCompatActivity {
         animationDrawable.setExitFadeDuration(5000);
         animationDrawable.start();
 
-        // Set startButton listener
+        seconds = 0;
+        minutes = 1;
+
+        // startButton listener
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -44,41 +54,97 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // pauseButton listener
+        pauseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                pauseTimer();
+            }
+        });
+
+        // stopButton listener
+        stopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopTimer();
+            }
+        });
     }
 
     /**
      * Starts the timer logic.
      */
-    public void startTimer() {
-        timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                seconds ++;
-                if (seconds == 60) {
-                    seconds = 0;
-                    minutes++;
-                }
-                // Get need to update the timer in the same thread that handles the UI
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateVisualTime(minutes, seconds);
+    private void startTimer() {
+        // Generate the timer task in a different thread
+        if ((!running || paused) && minutes + seconds != 0) {
+            timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    seconds--;
+                    if (seconds <= -1) {
+                        seconds = 59;
+                        minutes--;
                     }
-                });
-            }
-        };
-        // Generate the timer in a different thread
-        Timer timer = new Timer();
-        timer.scheduleAtFixedRate(timerTask, 0, 1000);
+                    // Ends timer if time ends.
+                    if (minutes == 0 && seconds == 0) {
+                        timer.cancel();
+                        running = false;
+                    }
+                    // We need to update the timer in the same thread that handles the UI
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateVisualTime(minutes, seconds);
+                        }
+                    });
+                }
+            };
+            timer = new Timer();
+            timer.scheduleAtFixedRate(timerTask, 1, 1000);
+            running = true;
+            paused = false;
+        }
+    }
+
+    /**
+     * Pauses the timer.
+     */
+    private void pauseTimer() {
+        if (running) {
+            timer.cancel();
+            paused = true;
+        }
+    }
+
+    /**
+     * Stops the timer.
+     */
+    private void stopTimer() {
+        if (minutes + seconds != 0) {
+            seconds = 0;
+            minutes = 0;
+            timerTask.cancel();
+            running = false;
+            paused = false;
+            // We need to update the timer in the same thread that handles the UI
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateVisualTime(minutes, seconds);
+                }
+            });
+        }
     }
 
     /**
      * Manages the visual representation of the elapsed time.
+     *
      * @param minutes Numeric value for minutes.
      * @param seconds Numeric value for seconds.
      */
     private void updateVisualTime(int minutes, int seconds) {
-        String time = (minutes <= 9 ? "0" : "") + minutes + ":" + (seconds<=9 ? "0" : "") + seconds;
+        // Represents the time in the UI.
+        String time = (minutes <= 9 ? "0" : "") + minutes + ":" + (seconds <= 9 ? "0" : "") + seconds;
         timerText.setText(time);
     }
 
@@ -89,7 +155,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if (timerTask != null) {
+            timer.purge();
             timerTask.cancel();
+
         }
     }
 

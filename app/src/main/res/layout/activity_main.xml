@@ -30,12 +30,12 @@
         app:layout_constraintBottom_toTopOf="@+id/pomodoro_logo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/start_button" />
+        app:layout_constraintTop_toBottomOf="@+id/startButton" />
 
     <ImageButton
-        android:id="@+id/start_button"
-        android:layout_width="266dp"
-        android:layout_height="239dp"
+        android:id="@+id/startButton"
+        android:layout_width="127dp"
+        android:layout_height="107dp"
         android:layout_marginTop="50dp"
         android:background="#00FFFFFF"
         android:scaleType="fitXY"
@@ -43,6 +43,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/start_button" />
+
+    <Button
+        android:id="@+id/stopButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="50dp"
+        android:text="Stop"
+        app:layout_constraintBottom_toTopOf="@+id/timerText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/startButton" />
+
+    <ImageButton
+        android:id="@+id/pauseButton"
+        android:layout_width="109dp"
+        android:layout_height="94dp"
+        android:layout_marginEnd="50dp"
+        android:background="#00FFFFFF"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toTopOf="@+id/timerText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/startButton"
+        app:srcCompat="@drawable/pause_button" />
 
     <!--
     <pl.droidsonroids.gif.GifImageView
