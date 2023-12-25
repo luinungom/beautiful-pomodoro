@@ -4,6 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.graphics.drawable.AnimationDrawable;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -16,13 +19,15 @@ import java.util.TimerTask;
 public class MainActivity extends AppCompatActivity {
 
 
-    private byte seconds;
-    private byte minutes;
+    private byte seconds = 0;
+    private byte minutes = 0;
+    private byte insertedMinutes = 0;
     private TextView timerText;
     private TimerTask timerTask;
     private Timer timer;
     private boolean running;
     private boolean paused = false;
+    private TextView insertedTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,17 +39,16 @@ public class MainActivity extends AppCompatActivity {
         ImageButton startButton = findViewById(R.id.startButton);
         ImageButton pauseButton = findViewById(R.id.pauseButton);
         Button stopButton = findViewById(R.id.stopButton);
+        Button increaseButton = findViewById(R.id.increaseButton);
+        Button decreaseButton = findViewById(R.id.decreaseButton);
         timerText = findViewById(R.id.timerText);
-
+        insertedTime = findViewById(R.id.insertedTime);
 
         // Load background gradient
         AnimationDrawable animationDrawable = (AnimationDrawable) constraintLayout.getBackground();
         animationDrawable.setEnterFadeDuration(2000);
         animationDrawable.setExitFadeDuration(5000);
         animationDrawable.start();
-
-        seconds = 0;
-        minutes = 1;
 
         // startButton listener
         startButton.setOnClickListener(new View.OnClickListener() {
@@ -67,6 +71,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 stopTimer();
+            }
+        });
+
+        increaseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                increaseTime();
+                insertedTime.setText(String.valueOf(insertedMinutes));
+            }
+        });
+
+        decreaseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                decreaseTime();
+                insertedTime.setText(String.valueOf(insertedMinutes));
             }
         });
     }
@@ -123,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
         if (minutes + seconds != 0) {
             seconds = 0;
             minutes = 0;
+            minutes = insertedMinutes;
             timerTask.cancel();
             running = false;
             paused = false;
@@ -133,6 +154,20 @@ public class MainActivity extends AppCompatActivity {
                     updateVisualTime(minutes, seconds);
                 }
             });
+        }
+    }
+
+    private void increaseTime() {
+        if(!running) {
+            insertedMinutes++;
+            minutes = insertedMinutes;
+        }
+    }
+
+    private void decreaseTime() {
+        if(!running && insertedMinutes > 1) {
+            insertedMinutes--;
+            minutes = insertedMinutes;
         }
     }
 
