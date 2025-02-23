@@ -3,11 +3,14 @@ package com.example.beautiful_pomodoro;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -20,19 +23,22 @@ public class MainActivity extends AppCompatActivity {
 
 
     private byte seconds = 0;
-    private byte minutes = 0;
-    private byte insertedMinutes = 0;
+    private byte minutes = 1;
+    private byte insertedMinutes = 1;
     private TextView timerText;
     private TimerTask timerTask;
     private Timer timer;
     private boolean running;
     private boolean paused = false;
     private TextView insertedTime;
+    private Vibrator vibrator;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         // Assign visual elements to objects
         ConstraintLayout constraintLayout = findViewById(R.id.layout);
@@ -42,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         Button increaseButton = findViewById(R.id.increaseButton);
         Button decreaseButton = findViewById(R.id.decreaseButton);
         timerText = findViewById(R.id.timerText);
-        insertedTime = findViewById(R.id.insertedTime);
+        //insertedTime = findViewById(R.id.insertedTime);
 
         // Load background gradient
         AnimationDrawable animationDrawable = (AnimationDrawable) constraintLayout.getBackground();
@@ -78,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 increaseTime();
-                insertedTime.setText(String.valueOf(insertedMinutes));
+                //insertedTime.setText(String.valueOf(insertedMinutes));
             }
         });
 
@@ -86,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 decreaseTime();
-                insertedTime.setText(String.valueOf(insertedMinutes));
+                //insertedTime.setText(String.valueOf(insertedMinutes));
             }
         });
     }
@@ -95,8 +101,9 @@ public class MainActivity extends AppCompatActivity {
      * Starts the timer logic.
      */
     private void startTimer() {
+        final VibrationEffect vibrationEffect1;
         // Generate the timer task in a different thread
-        if ((!running || paused) && minutes + seconds != 0) {
+        if ((!running || paused)) {
             timerTask = new TimerTask() {
                 @Override
                 public void run() {
@@ -109,6 +116,11 @@ public class MainActivity extends AppCompatActivity {
                     if (minutes == 0 && seconds == 0) {
                         timer.cancel();
                         running = false;
+                        if (vibrator != null) {
+                            vibrator.vibrate(1000);
+                            vibrator = null;
+                        }
+
                     }
                     // We need to update the timer in the same thread that handles the UI
                     runOnUiThread(new Runnable() {
@@ -120,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             };
             timer = new Timer();
-            timer.scheduleAtFixedRate(timerTask, 1, 1000);
+            timer.schedule(timerTask, 1, 1000);
             running = true;
             paused = false;
         }
@@ -140,9 +152,9 @@ public class MainActivity extends AppCompatActivity {
      * Stops the timer.
      */
     private void stopTimer() {
-        if (minutes + seconds != 0) {
+        if ((minutes + seconds != 0) && paused || running) {
             seconds = 0;
-            minutes = 0;
+            //minutes = 0;
             minutes = insertedMinutes;
             timerTask.cancel();
             running = false;
@@ -158,16 +170,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void increaseTime() {
-        if(!running) {
+        if (!running) {
             insertedMinutes++;
             minutes = insertedMinutes;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateVisualTime(minutes, seconds);
+                }
+            });
         }
     }
 
     private void decreaseTime() {
-        if(!running && insertedMinutes > 1) {
+        if (!running && insertedMinutes > 1) {
             insertedMinutes--;
             minutes = insertedMinutes;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateVisualTime(minutes, seconds);
+                }
+            });
         }
     }
 
