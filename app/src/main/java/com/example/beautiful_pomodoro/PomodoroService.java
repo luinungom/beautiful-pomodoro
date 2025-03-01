@@ -7,6 +7,9 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Vibrator;
@@ -47,8 +50,6 @@ public class PomodoroService extends Service {
         super.onCreate();
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         createNotificationChannel();
-        //startForeground(NOTIFICATION_ID, createNotification());
-
     }
 
     private void createNotificationChannel() {
@@ -132,8 +133,9 @@ public class PomodoroService extends Service {
                         timer.cancel();
                         running = false;
                         stopSelf();
+                        playCustomAlarmSound();
                         if (vibrator != null) {
-                            vibrator.vibrate(1000);
+                            vibrator.vibrate(1500);
                             vibrator = null;
                         }
                     }
@@ -216,6 +218,26 @@ public class PomodoroService extends Service {
             timer.purge();
             timerTask.cancel();
             stopForeground(true);
+        }
+    }
+
+    /**
+     * Manages alarm sound.
+     */
+    private void playCustomAlarmSound() {
+        try {
+            // Gets default notification's sound URI
+            Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+            // Creates ringtone using the URI
+            Ringtone ringtone = RingtoneManager.getRingtone(this, alarmSound);
+
+            // Plays ringtone
+            if (ringtone != null) {
+                ringtone.play();
+            }
+        } catch (Exception e) {
+            Log.w("Pomodoro Service","Error handling the sound", e);
         }
     }
 
