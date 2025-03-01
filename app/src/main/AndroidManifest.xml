@@ -4,7 +4,9 @@
 
     <!--vibrate permission which needs to be invoked as we hard
     accessing the vibrator hardware of the device-->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.VIBRATE" />
+
 
     <application
         android:allowBackup="true"
@@ -25,6 +27,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name="com.example.beautiful_pomodoro.PomodoroService" />
     </application>
 
 </manifest>

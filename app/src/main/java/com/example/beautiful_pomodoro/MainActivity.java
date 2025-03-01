@@ -3,14 +3,13 @@ package com.example.beautiful_pomodoro;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.drawable.AnimationDrawable;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -21,24 +20,18 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
-
-    private byte seconds = 0;
-    private byte minutes = 1;
-    private byte insertedMinutes = 1;
+    private BroadcastReceiver receiver;
     private TextView timerText;
-    private TimerTask timerTask;
-    private Timer timer;
-    private boolean running;
-    private boolean paused = false;
-    private TextView insertedTime;
-    private Vibrator vibrator;
-
+    PomodoroService pomodoroService;
+    Intent serviceIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        pomodoroService = new PomodoroService();
+        serviceIntent = new Intent(this, PomodoroService.class);
+        startService(serviceIntent);
         setContentView(R.layout.activity_main);
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         // Assign visual elements to objects
         ConstraintLayout constraintLayout = findViewById(R.id.layout);
@@ -48,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
         Button increaseButton = findViewById(R.id.increaseButton);
         Button decreaseButton = findViewById(R.id.decreaseButton);
         timerText = findViewById(R.id.timerText);
-        //insertedTime = findViewById(R.id.insertedTime);
 
         // Load background gradient
         AnimationDrawable animationDrawable = (AnimationDrawable) constraintLayout.getBackground();
@@ -57,33 +49,23 @@ public class MainActivity extends AppCompatActivity {
         animationDrawable.start();
 
         // startButton listener
-        startButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startTimer();
-            }
-        });
+        startButton.setOnClickListener(v -> sendActionToService(PomodoroService.ACTION_START_TIMER));
 
         // pauseButton listener
         pauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pauseTimer();
+                pomodoroService.pauseTimer();
             }
         });
 
         // stopButton listener
-        stopButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                stopTimer();
-            }
-        });
+        stopButton.setOnClickListener(v -> sendActionToService(PomodoroService.ACTION_STOP_TIMER));
 
         increaseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                increaseTime();
+                pomodoroService.increaseTime();
                 //insertedTime.setText(String.valueOf(insertedMinutes));
             }
         });
@@ -91,108 +73,42 @@ public class MainActivity extends AppCompatActivity {
         decreaseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                decreaseTime();
+                pomodoroService.decreaseTime();
                 //insertedTime.setText(String.valueOf(insertedMinutes));
             }
         });
+
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                // Updates the clock
+                int minutes = intent.getIntExtra("minutes", 0);
+                int seconds = intent.getIntExtra("seconds", 0);
+                updateVisualTime(minutes, seconds);
+            }
+        };
+
+        // Registers the BroadcastReceiver
+        IntentFilter filter = new IntentFilter("UPDATE_TIME");
+        registerReceiver(receiver, filter);
     }
 
-    /**
-     * Starts the timer logic.
-     */
-    private void startTimer() {
-        final VibrationEffect vibrationEffect1;
-        // Generate the timer task in a different thread
-        if ((!running || paused)) {
-            timerTask = new TimerTask() {
-                @Override
-                public void run() {
-                    seconds--;
-                    if (seconds <= -1) {
-                        seconds = 59;
-                        minutes--;
-                    }
-                    // Ends timer if time ends.
-                    if (minutes == 0 && seconds == 0) {
-                        timer.cancel();
-                        running = false;
-                        if (vibrator != null) {
-                            vibrator.vibrate(1000);
-                            vibrator = null;
-                        }
-
-                    }
-                    // We need to update the timer in the same thread that handles the UI
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            updateVisualTime(minutes, seconds);
-                        }
-                    });
-                }
-            };
-            timer = new Timer();
-            timer.schedule(timerTask, 1, 1000);
-            running = true;
-            paused = false;
-        }
+    private void sendActionToService(String action) {
+        Intent serviceIntent = new Intent(this, PomodoroService.class);
+        serviceIntent.setAction(action);
+        startService(serviceIntent);
     }
 
-    /**
-     * Pauses the timer.
-     */
-    private void pauseTimer() {
-        if (running) {
-            timer.cancel();
-            paused = true;
-        }
+    private void startPomodoroTimer() {
+        Intent intent = new Intent(this, PomodoroService.class);
+        intent.setAction(PomodoroService.ACTION_START_TIMER);
+        startService(intent);
     }
 
-    /**
-     * Stops the timer.
-     */
-    private void stopTimer() {
-        if ((minutes + seconds != 0) && paused || running) {
-            seconds = 0;
-            //minutes = 0;
-            minutes = insertedMinutes;
-            timerTask.cancel();
-            running = false;
-            paused = false;
-            // We need to update the timer in the same thread that handles the UI
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    updateVisualTime(minutes, seconds);
-                }
-            });
-        }
-    }
-
-    private void increaseTime() {
-        if (!running) {
-            insertedMinutes++;
-            minutes = insertedMinutes;
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    updateVisualTime(minutes, seconds);
-                }
-            });
-        }
-    }
-
-    private void decreaseTime() {
-        if (!running && insertedMinutes > 1) {
-            insertedMinutes--;
-            minutes = insertedMinutes;
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    updateVisualTime(minutes, seconds);
-                }
-            });
-        }
+    private void stopPomodoroTimer() {
+        Intent intent = new Intent(this, PomodoroService.class);
+        intent.setAction(PomodoroService.ACTION_STOP_TIMER);
+        startService(intent);
     }
 
     /**
@@ -213,11 +129,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (timerTask != null) {
-            timer.purge();
-            timerTask.cancel();
-
-        }
+        unregisterReceiver(receiver);
     }
-
 }
