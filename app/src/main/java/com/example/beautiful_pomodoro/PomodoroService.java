@@ -1,7 +1,9 @@
 package com.example.beautiful_pomodoro;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -11,14 +13,10 @@ import android.os.Vibrator;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 
 import java.util.Timer;
 import java.util.TimerTask;
-
-import android.app.Notification;
-import android.app.PendingIntent;
-
-import androidx.core.app.NotificationCompat;
 
 public class PomodoroService extends Service {
 
@@ -26,7 +24,7 @@ public class PomodoroService extends Service {
     private int minutes = 1;
     private byte insertedMinutes = 1;
     private static TimerTask timerTask;
-    private Timer timer;
+    private static Timer timer;
     private static boolean running;
     private static boolean paused = false;
     private Vibrator vibrator;
@@ -49,7 +47,7 @@ public class PomodoroService extends Service {
         super.onCreate();
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         createNotificationChannel();
-        startForeground(NOTIFICATION_ID, createNotification());
+        //startForeground(NOTIFICATION_ID, createNotification());
 
     }
 
@@ -71,9 +69,10 @@ public class PomodoroService extends Service {
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Pomodoro Timer")
-                .setContentText("Pomodoro timer is running: " + minutes +":"+ seconds)
-                .setSmallIcon(R.drawable.animated_pomodoro) // Reemplaza con tu ícono
+                .setContentText("Pomodoro timer is running")
+                .setSmallIcon(R.drawable.animated_pomodoro)
                 .setContentIntent(pendingIntent)
+                .setOnlyAlertOnce(true)
                 .build();
     }
 
@@ -123,6 +122,7 @@ public class PomodoroService extends Service {
                         seconds = 59;
                         minutes--;
                     }
+                    startForeground(NOTIFICATION_ID, createNotification());
                     Intent updateIntent = new Intent("UPDATE_TIME");
                     updateIntent.putExtra("minutes", minutes);
                     updateIntent.putExtra("seconds", seconds);
@@ -130,8 +130,8 @@ public class PomodoroService extends Service {
                     // Ends timer if time ends.
                     if (minutes == 0 && seconds == 0) {
                         timer.cancel();
-                        stopSelf();
                         running = false;
+                        stopSelf();
                         if (vibrator != null) {
                             vibrator.vibrate(1000);
                             vibrator = null;
@@ -174,32 +174,35 @@ public class PomodoroService extends Service {
             intent.putExtra("seconds", seconds);
             sendBroadcast(intent);
             timerTask.cancel();
+            stopSelf();
         }
     }
 
+    /**
+     * Adds 1 minute to the timer.
+     */
     protected void increaseTime() {
         if (!running) {
             insertedMinutes++;
             minutes = insertedMinutes;
-//            runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    updateVisualTime(minutes, seconds);
-//                }
-//            });
+            Intent intent = new Intent("UPDATE_TIME");
+            intent.putExtra("minutes", minutes);
+            intent.putExtra("seconds", seconds);
+            sendBroadcast(intent);
         }
     }
 
+    /**
+     * Decreases timer by 1 minute.
+     */
     protected void decreaseTime() {
         if (!running && insertedMinutes > 1) {
             insertedMinutes--;
             minutes = insertedMinutes;
-//            runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    updateVisualTime(minutes, seconds);
-//                }
-//            });
+            Intent intent = new Intent("UPDATE_TIME");
+            intent.putExtra("minutes", minutes);
+            intent.putExtra("seconds", seconds);
+            sendBroadcast(intent);
         }
     }
 
@@ -212,6 +215,7 @@ public class PomodoroService extends Service {
         if (timerTask != null) {
             timer.purge();
             timerTask.cancel();
+            stopForeground(true);
         }
     }
 

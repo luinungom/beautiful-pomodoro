@@ -1,22 +1,17 @@
 package com.example.beautiful_pomodoro;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,31 +47,16 @@ public class MainActivity extends AppCompatActivity {
         startButton.setOnClickListener(v -> sendActionToService(PomodoroService.ACTION_START_TIMER));
 
         // pauseButton listener
-        pauseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                pomodoroService.pauseTimer();
-            }
-        });
+        pauseButton.setOnClickListener(v -> sendActionToService(PomodoroService.ACTION_PAUSE_TIMER));
 
         // stopButton listener
         stopButton.setOnClickListener(v -> sendActionToService(PomodoroService.ACTION_STOP_TIMER));
 
-        increaseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                pomodoroService.increaseTime();
-                //insertedTime.setText(String.valueOf(insertedMinutes));
-            }
-        });
+        // increaseButton listener
+        increaseButton.setOnClickListener(v -> sendActionToService(PomodoroService.ACTION_INCREASE_TIME));
 
-        decreaseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                pomodoroService.decreaseTime();
-                //insertedTime.setText(String.valueOf(insertedMinutes));
-            }
-        });
+        // decreaseButton listener
+        decreaseButton.setOnClickListener(v -> sendActionToService(PomodoroService.ACTION_DECREASE_TIME));
 
         receiver = new BroadcastReceiver() {
             @Override
@@ -97,18 +77,6 @@ public class MainActivity extends AppCompatActivity {
         Intent serviceIntent = new Intent(this, PomodoroService.class);
         serviceIntent.setAction(action);
         startService(serviceIntent);
-    }
-
-    private void startPomodoroTimer() {
-        Intent intent = new Intent(this, PomodoroService.class);
-        intent.setAction(PomodoroService.ACTION_START_TIMER);
-        startService(intent);
-    }
-
-    private void stopPomodoroTimer() {
-        Intent intent = new Intent(this, PomodoroService.class);
-        intent.setAction(PomodoroService.ACTION_STOP_TIMER);
-        startService(intent);
     }
 
     /**
