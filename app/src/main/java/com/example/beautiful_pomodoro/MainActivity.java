@@ -38,10 +38,10 @@ public class MainActivity extends AppCompatActivity {
         timerText = findViewById(R.id.timerText);
 
         // Load background gradient
-        AnimationDrawable animationDrawable = (AnimationDrawable) constraintLayout.getBackground();
-        animationDrawable.setEnterFadeDuration(2000);
-        animationDrawable.setExitFadeDuration(5000);
-        animationDrawable.start();
+//        AnimationDrawable animationDrawable = (AnimationDrawable) constraintLayout.getBackground();
+//        animationDrawable.setEnterFadeDuration(2000);
+//        animationDrawable.setExitFadeDuration(5000);
+//        animationDrawable.start();
 
         // startButton listener
         startButton.setOnClickListener(v -> sendActionToService(PomodoroService.ACTION_START_TIMER));

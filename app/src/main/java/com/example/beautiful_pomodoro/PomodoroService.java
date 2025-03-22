@@ -45,6 +45,10 @@ public class PomodoroService extends Service {
         return null;
     }
 
+    /**
+     * Initializes the service by setting up the vibrator and creating the notification channel.
+     * This method is called when the service is first created.
+     */
     @Override
     public void onCreate() {
         super.onCreate();
@@ -52,6 +56,9 @@ public class PomodoroService extends Service {
         createNotificationChannel();
     }
 
+    /**
+     * Creates the notification channel for the service.
+     */
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
@@ -71,7 +78,7 @@ public class PomodoroService extends Service {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Pomodoro Timer")
                 .setContentText("Pomodoro timer is running")
-                .setSmallIcon(R.drawable.animated_pomodoro)
+                .setSmallIcon(R.drawable.icono_3)
                 .setContentIntent(pendingIntent)
                 .setOnlyAlertOnce(true)
                 .build();
@@ -130,14 +137,14 @@ public class PomodoroService extends Service {
                     PomodoroService.this.sendBroadcast(updateIntent);
                     // Ends timer if time ends.
                     if (minutes == 0 && seconds == 0) {
-                        timer.cancel();
-                        running = false;
-                        stopSelf();
                         playCustomAlarmSound();
                         if (vibrator != null) {
                             vibrator.vibrate(1500);
                             vibrator = null;
                         }
+                        timer.cancel();
+                        running = false;
+                        stopSelf();
                     }
                 }
             };
@@ -237,7 +244,7 @@ public class PomodoroService extends Service {
                 ringtone.play();
             }
         } catch (Exception e) {
-            Log.w("Pomodoro Service","Error handling the sound", e);
+            Log.w("Pomodoro Service", "Error handling the sound", e);
         }
     }
 
