@@ -78,7 +78,7 @@ public class PomodoroService extends Service {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Pomodoro Timer")
                 .setContentText("Pomodoro timer is running")
-                .setSmallIcon(R.drawable.icono_3)
+                .setSmallIcon(R.drawable.pomodoro)
                 .setContentIntent(pendingIntent)
                 .setOnlyAlertOnce(true)
                 .build();

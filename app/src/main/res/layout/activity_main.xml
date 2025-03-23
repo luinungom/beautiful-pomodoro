@@ -8,12 +8,44 @@
     android:background="@drawable/gradiant_list"
     tools:context="com.example.beautiful_pomodoro.MainActivity">
 
+    <ImageButton
+        android:id="@+id/stopButton"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#00FFFFFF"
+        android:scaleType="fitXY"
+        android:contentDescription="@string/stop_button_description"
+        app:layout_constraintBottom_toTopOf="@+id/imageView"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/startButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.502"
+        app:layout_constraintWidth_percent="0.20"
+        app:srcCompat="@drawable/stop_button" />
+
+    <ImageButton
+        android:id="@+id/pauseButton"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#00FFFFFF"
+        android:scaleType="fitXY"
+        android:contentDescription="@string/pause_button_description"
+        app:layout_constraintBottom_toTopOf="@+id/imageView"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/startButton"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.502"
+        app:layout_constraintWidth_percent="0.20"
+        app:srcCompat="@drawable/pause_button" />
+
     <TextView
         android:id="@+id/timerText"
         android:layout_width="345dp"
         android:layout_height="160dp"
         android:fontFamily="sans-serif"
-        android:text="01:00"
+        android:text="@string/default_timer_value"
         android:textColor="#D1DAE3"
         android:textSize="130sp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -23,60 +55,46 @@
 
     <ImageButton
         android:id="@+id/startButton"
-        android:layout_width="127dp"
-        android:layout_height="107dp"
-        android:layout_marginTop="60dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:background="#00FFFFFF"
         android:scaleType="fitXY"
+        android:contentDescription="@string/play_button_description"
+        app:layout_constraintBottom_toTopOf="@+id/imageView"
+        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.52"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/start_button" />
-
-    <Button
-        android:id="@+id/stopButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="50dp"
-        android:fontFamily="@font/press_start_2p"
-        android:text="Stop"
-        app:layout_constraintBottom_toTopOf="@+id/timerText"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/startButton" />
-
-    <ImageButton
-        android:id="@+id/pauseButton"
-        android:layout_width="109dp"
-        android:layout_height="94dp"
-        android:layout_marginEnd="50dp"
-        android:background="#00FFFFFF"
-        android:scaleType="fitXY"
-        app:layout_constraintBottom_toTopOf="@+id/timerText"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/startButton"
-        app:srcCompat="@drawable/pause_button" />
+        app:layout_constraintVertical_bias="0.502"
+        app:layout_constraintWidth_percent="0.25"
+        app:srcCompat="@drawable/play_button" />
 
     <Button
         android:id="@+id/increaseButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
-        android:layout_marginBottom="588dp"
-        android:fontFamily="@font/press_start_2p"
-        android:text="+"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:fontFamily="sans-serif-black"
+        android:text="@string/increase"
+        android:textSize="20sp"
+        android:textColor="#053506"
+        app:layout_constraintBottom_toTopOf="@+id/imageView"
+        app:layout_constraintEnd_toStartOf="@+id/startButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/startButton" />
 
     <Button
         android:id="@+id/decreaseButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="48dp"
-        android:layout_marginBottom="596dp"
-        android:fontFamily="@font/press_start_2p"
-        android:text="-"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:fontFamily="sans-serif-black"
+        android:text="@string/decrease"
+        android:textSize="20sp"
+        android:textColor="#053506"
+        app:layout_constraintBottom_toTopOf="@+id/imageView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/startButton"
+        app:layout_constraintTop_toBottomOf="@+id/startButton" />
 
     <ImageView
         android:id="@+id/imageView"
@@ -84,18 +102,14 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="-40dp"
         android:translationZ="-100dp"
+        android:scaleType="fitXY"
+        android:contentDescription="@null"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintWidth_percent="0.5"
         app:srcCompat="@drawable/tomato_background" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_begin="20dp" />
 
     <!--
     <pl.droidsonroids.gif.GifImageView

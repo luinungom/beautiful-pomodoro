@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Beautiful Pomodoro</string>
+    <string name="stop_button_description">Stops the timer</string>
+    <string name="play_button_description">Starts the timer</string>
+    <string name="pause_button_description">Pauses the timer</string>
+    <string name="increase_button_description">Adds a minute to the timer</string>
+    <string name="decrease_button_description">Decreases a minute to the timer</string>
+    <string name="default_timer_value">01:00</string>
+    <string name="increase">+</string>
+    <string name="decrease">-</string>
 </resources>

@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         ConstraintLayout constraintLayout = findViewById(R.id.layout);
         ImageButton startButton = findViewById(R.id.startButton);
         ImageButton pauseButton = findViewById(R.id.pauseButton);
-        Button stopButton = findViewById(R.id.stopButton);
+        ImageButton stopButton = findViewById(R.id.stopButton);
         Button increaseButton = findViewById(R.id.increaseButton);
         Button decreaseButton = findViewById(R.id.decreaseButton);
         timerText = findViewById(R.id.timerText);
