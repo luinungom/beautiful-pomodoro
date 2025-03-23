@@ -5,23 +5,20 @@
     android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
+    android:background="@drawable/gradiant_list"
     tools:context="com.example.beautiful_pomodoro.MainActivity">
 
     <TextView
         android:id="@+id/timerText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="70dp"
-        android:fontFamily="@font/digital_7"
+        android:layout_width="345dp"
+        android:layout_height="160dp"
+        android:fontFamily="sans-serif"
         android:text="01:00"
-        android:textColor="#FFFFFF"
-        android:textSize="150sp"
+        android:textColor="#D1DAE3"
+        android:textSize="130sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         tools:text="01:00" />
 
     <ImageButton
@@ -63,8 +60,8 @@
         android:id="@+id/increaseButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="50dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginBottom="588dp"
         android:fontFamily="@font/press_start_2p"
         android:text="+"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -74,12 +71,31 @@
         android:id="@+id/decreaseButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="50dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginEnd="48dp"
+        android:layout_marginBottom="596dp"
         android:fontFamily="@font/press_start_2p"
         android:text="-"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="-40dp"
+        android:translationZ="-100dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/tomato_background" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="20dp" />
 
     <!--
     <pl.droidsonroids.gif.GifImageView
