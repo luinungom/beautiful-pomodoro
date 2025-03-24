@@ -11,23 +11,24 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.PowerManager;
 import android.os.Vibrator;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 public class PomodoroService extends Service {
 
+    private PowerManager.WakeLock wakeLock;
+    private Handler handler;
+    private Runnable timerRunnable;
     private int seconds = 0;
-    private int minutes = 1;
-    private byte insertedMinutes = 1;
-    private static TimerTask timerTask;
-    private static Timer timer;
+    private int minutes;
+    private byte insertedMinutes;
     private static boolean running;
     private static boolean paused = false;
     private Vibrator vibrator;
@@ -52,6 +53,8 @@ public class PomodoroService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        insertedMinutes = TimerState.getInstance().initialMinutes;
+        minutes = insertedMinutes;
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         createNotificationChannel();
     }
@@ -63,7 +66,7 @@ public class PomodoroService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
-                    "Pomodoro Timer",
+                    "Beautiful Pomodoro",
                     NotificationManager.IMPORTANCE_LOW
             );
             NotificationManager manager = getSystemService(NotificationManager.class);
@@ -76,8 +79,8 @@ public class PomodoroService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Pomodoro Timer")
-                .setContentText("Pomodoro timer is running")
+                .setContentTitle("Stay focused")
+                .setContentText("Timer is running")
                 .setSmallIcon(R.drawable.pomodoro)
                 .setContentIntent(pendingIntent)
                 .setOnlyAlertOnce(true)
@@ -122,7 +125,16 @@ public class PomodoroService extends Service {
      */
     protected void startTimer() {
         if ((!running || paused)) {
-            timerTask = new TimerTask() {
+            // Create Wakelock
+            PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+            wakeLock = powerManager.newWakeLock(
+                    PowerManager.PARTIAL_WAKE_LOCK,
+                    "BeautifulPomodoro::TimerWakeLockTag"
+            );
+            // WakeLock maximum limit of 1 hour
+            wakeLock.acquire(3600000);
+            handler = new Handler(Looper.getMainLooper());
+            timerRunnable = new Runnable() {
                 @Override
                 public void run() {
                     seconds--;
@@ -131,10 +143,7 @@ public class PomodoroService extends Service {
                         minutes--;
                     }
                     startForeground(NOTIFICATION_ID, createNotification());
-                    Intent updateIntent = new Intent("UPDATE_TIME");
-                    updateIntent.putExtra("minutes", minutes);
-                    updateIntent.putExtra("seconds", seconds);
-                    PomodoroService.this.sendBroadcast(updateIntent);
+                    sendTimeUpdateBroadcast();
                     // Ends timer if time ends.
                     if (minutes == 0 && seconds == 0) {
                         playCustomAlarmSound();
@@ -142,14 +151,15 @@ public class PomodoroService extends Service {
                             vibrator.vibrate(1500);
                             vibrator = null;
                         }
-                        timer.cancel();
+                        stopTimer();
                         running = false;
                         stopSelf();
+                    } else {
+                        handler.postDelayed(this, 1000);
                     }
                 }
             };
-            timer = new Timer();
-            timer.schedule(timerTask, 1, 1000);
+            handler.post(timerRunnable);
             running = true;
             paused = false;
         }
@@ -160,12 +170,16 @@ public class PomodoroService extends Service {
      */
     protected void pauseTimer() {
         if (running) {
-            timer.cancel();
+            // Stop handler
+            if (handler != null && timerRunnable != null) {
+                handler.removeCallbacks(timerRunnable);
+            }
+            // Release wakelock
+            if (wakeLock != null && wakeLock.isHeld()) {
+                wakeLock.release();
+            }
             paused = true;
-            Intent updateIntent = new Intent("UPDATE_TIME");
-            updateIntent.putExtra("minutes", minutes);
-            updateIntent.putExtra("seconds", seconds);
-            sendBroadcast(updateIntent);
+            sendTimeUpdateBroadcast();
         }
     }
 
@@ -176,13 +190,18 @@ public class PomodoroService extends Service {
         if ((minutes + seconds != 0) && paused || running) {
             seconds = 0;
             minutes = insertedMinutes;
+            TimerState.getInstance().initialMinutes = insertedMinutes;
+            // Stop Handler
+            if (handler != null && timerRunnable != null) {
+                handler.removeCallbacks(timerRunnable);
+            }
+            // Release WakeLock
+            if (wakeLock != null && wakeLock.isHeld()) {
+                wakeLock.release();
+            }
             running = false;
             paused = false;
-            Intent intent = new Intent("UPDATE_TIME");
-            intent.putExtra("minutes", minutes);
-            intent.putExtra("seconds", seconds);
-            sendBroadcast(intent);
-            timerTask.cancel();
+            sendTimeUpdateBroadcast();
             stopSelf();
         }
     }
@@ -191,13 +210,11 @@ public class PomodoroService extends Service {
      * Adds 1 minute to the timer.
      */
     protected void increaseTime() {
-        if (!running) {
-            insertedMinutes++;
+        if (!running && minutes <= 59) {
+            TimerState.getInstance().initialMinutes++;
+            insertedMinutes = TimerState.getInstance().initialMinutes;
             minutes = insertedMinutes;
-            Intent intent = new Intent("UPDATE_TIME");
-            intent.putExtra("minutes", minutes);
-            intent.putExtra("seconds", seconds);
-            sendBroadcast(intent);
+            sendTimeUpdateBroadcast();
         }
     }
 
@@ -206,12 +223,10 @@ public class PomodoroService extends Service {
      */
     protected void decreaseTime() {
         if (!running && insertedMinutes > 1) {
-            insertedMinutes--;
+            TimerState.getInstance().initialMinutes--;
+            insertedMinutes = TimerState.getInstance().initialMinutes;
             minutes = insertedMinutes;
-            Intent intent = new Intent("UPDATE_TIME");
-            intent.putExtra("minutes", minutes);
-            intent.putExtra("seconds", seconds);
-            sendBroadcast(intent);
+            sendTimeUpdateBroadcast();
         }
     }
 
@@ -221,11 +236,22 @@ public class PomodoroService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (timerTask != null) {
-            timer.purge();
-            timerTask.cancel();
-            stopForeground(true);
+        if (wakeLock != null && wakeLock.isHeld()) {
+            wakeLock.release();
         }
+        if (handler != null && timerRunnable != null) {
+            handler.removeCallbacks(timerRunnable);
+        }
+    }
+
+    /**
+     * Method for updating visual timer.
+     */
+    private void sendTimeUpdateBroadcast() {
+        Intent intent = new Intent("UPDATE_TIME");
+        intent.putExtra("minutes", minutes);
+        intent.putExtra("seconds", seconds);
+        sendBroadcast(intent);
     }
 
     /**
@@ -234,7 +260,7 @@ public class PomodoroService extends Service {
     private void playCustomAlarmSound() {
         try {
             // Gets default notification's sound URI
-            Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
 
             // Creates ringtone using the URI
             Ringtone ringtone = RingtoneManager.getRingtone(this, alarmSound);
@@ -242,10 +268,11 @@ public class PomodoroService extends Service {
             // Plays ringtone
             if (ringtone != null) {
                 ringtone.play();
+                Thread.sleep(2500);
+                ringtone.stop();
             }
         } catch (Exception e) {
             Log.w("Pomodoro Service", "Error handling the sound", e);
         }
     }
-
 }

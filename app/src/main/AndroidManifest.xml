@@ -4,6 +4,7 @@
 
     <!--vibrate permission which needs to be invoked as we hard
     accessing the vibrator hardware of the device-->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
