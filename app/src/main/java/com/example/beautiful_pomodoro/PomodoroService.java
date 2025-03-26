@@ -5,18 +5,14 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
-import android.os.Vibrator;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -32,21 +28,19 @@ public class PomodoroService extends Service {
     private byte insertedMinutes;
     private static boolean running;
     private static boolean paused = false;
-    private Vibrator vibrator;
     public static final String ACTION_START_TIMER = "com.example.beautiful_pomodoro.ACTION_START_TIMER";
     public static final String ACTION_PAUSE_TIMER = "com.example.beautiful_pomodoro.ACTION_PAUSE_TIMER";
     public static final String ACTION_STOP_TIMER = "com.example.beautiful_pomodoro.ACTION_STOP_TIMER";
     public static final String ACTION_INCREASE_TIME = "com.example.beautiful_pomodoro.ACTION_INCREASE_TIME";
     public static final String ACTION_DECREASE_TIME = "com.example.beautiful_pomodoro.ACTION_DECREASE_TIME";
+    public static final String ACTION_STOP_ALARM = "com.example.beautiful_pomodoro.ACTION_STOP_ALARM";
     private static final int NOTIFICATION_ID = 1;
     private static final String CHANNEL_ID = "PomodoroChannel";
     private MediaPlayer mediaPlayer;
     private AudioManager audioManager;
     private int currentVolume;
     private Handler volumeHandler;
-    private Runnable volumeRunnable;
     private static final int VOLUME_INCREMENT_INTERVAL = 500; // ms
-    private static final float VOLUME_INCREMENT_STEP = 0.05f; // 5% increment
 
     @Nullable
     @Override
@@ -63,7 +57,6 @@ public class PomodoroService extends Service {
         super.onCreate();
         insertedMinutes = TimerState.getInstance().initialMinutes;
         minutes = insertedMinutes;
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         createNotificationChannel();
     }
 
@@ -118,6 +111,10 @@ public class PomodoroService extends Service {
                         break;
                     case ACTION_DECREASE_TIME:
                         decreaseTime();
+                        break;
+                    case ACTION_STOP_ALARM:
+                        stopAlarm();
+                        Log.d("AlarmDebug", "Intento de detener alarma recibido");
                         break;
                     default:
                         Log.w("PomodoroService", "Unknown action: " + action);
@@ -258,50 +255,13 @@ public class PomodoroService extends Service {
         sendBroadcast(intent);
     }
 
-    /**
-     * Manages alarm.
-     */
     private void playCustomAlarm() {
-        try {
-            // Config audio manager
-            audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM);
-            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVolume, 0);
-            // Gets default notification's sound URI
-            Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-            if (alarmSound == null) {
-                alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            }
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setDataSource(this, alarmSound);
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
-            mediaPlayer.prepare();
-            mediaPlayer.setLooping(true);
-
-            currentVolume = 0;
-            mediaPlayer.setVolume(0, 0);
-            mediaPlayer.start();
-
-            volumeHandler = new Handler();
-            volumeRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    if (currentVolume < maxVolume) {
-                        currentVolume++;
-                        float volumeLevel = (float) currentVolume / maxVolume;
-                        mediaPlayer.setVolume(volumeLevel, volumeLevel);
-                        audioManager.setStreamVolume(
-                                AudioManager.STREAM_ALARM, currentVolume,0);
-                        volumeHandler.postDelayed(this, VOLUME_INCREMENT_INTERVAL);
-                        if (vibrator != null) {
-                            vibrator.vibrate(3000);
-                        }
-                    }
-                }
-            };
-            volumeHandler.post(volumeRunnable);
-        } catch (Exception e) {
-            Log.w("Pomodoro Service", "Error handling the sound", e);
-        }
+        AlarmManager.getInstance(this).playAlarm();
     }
+
+    private void stopAlarm() {
+        AlarmManager.getInstance(this).stopAlarm();
+        stopSelf();
+    }
+
 }

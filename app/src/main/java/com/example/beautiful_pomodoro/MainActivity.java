@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -18,14 +19,13 @@ public class MainActivity extends AppCompatActivity {
 
     private BroadcastReceiver receiver;
     private TextView timerText;
-    PomodoroService pomodoroService;
     Intent serviceIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        pomodoroService = new PomodoroService();
+        //pomodoroService = new PomodoroService();
         serviceIntent = new Intent(this, PomodoroService.class);
         startService(serviceIntent);
         setContentView(R.layout.activity_main);
@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
         // decreaseButton listener
         decreaseButton.setOnClickListener(v -> sendActionToService(PomodoroService.ACTION_DECREASE_TIME));
+        setupGlobalTouchListener();
 
         receiver = new BroadcastReceiver() {
             @Override
@@ -91,6 +92,19 @@ public class MainActivity extends AppCompatActivity {
         // Represents the time in the UI.
         String time = (minutes <= 9 ? "0" : "") + minutes + ":" + (seconds <= 9 ? "0" : "") + seconds;
         timerText.setText(time);
+    }
+
+    /**
+     * Setup a global listener for turning off the alarm. Touching the screen will stop the alarm.
+     */
+    private void setupGlobalTouchListener() {
+        getWindow().getDecorView().setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                sendActionToService(PomodoroService.ACTION_STOP_ALARM);
+                return true; // Consume el evento
+            }
+            return false;
+        });
     }
 
     /**
