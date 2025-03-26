@@ -114,7 +114,6 @@ public class PomodoroService extends Service {
                         break;
                     case ACTION_STOP_ALARM:
                         stopAlarm();
-                        Log.d("AlarmDebug", "Intento de detener alarma recibido");
                         break;
                     default:
                         Log.w("PomodoroService", "Unknown action: " + action);
