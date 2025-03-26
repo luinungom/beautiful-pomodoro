@@ -7,7 +7,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.media.Ringtone;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -39,6 +40,13 @@ public class PomodoroService extends Service {
     public static final String ACTION_DECREASE_TIME = "com.example.beautiful_pomodoro.ACTION_DECREASE_TIME";
     private static final int NOTIFICATION_ID = 1;
     private static final String CHANNEL_ID = "PomodoroChannel";
+    private MediaPlayer mediaPlayer;
+    private AudioManager audioManager;
+    private int currentVolume;
+    private Handler volumeHandler;
+    private Runnable volumeRunnable;
+    private static final int VOLUME_INCREMENT_INTERVAL = 500; // ms
+    private static final float VOLUME_INCREMENT_STEP = 0.05f; // 5% increment
 
     @Nullable
     @Override
@@ -146,11 +154,7 @@ public class PomodoroService extends Service {
                     sendTimeUpdateBroadcast();
                     // Ends timer if time ends.
                     if (minutes == 0 && seconds == 0) {
-                        playCustomAlarmSound();
-                        if (vibrator != null) {
-                            vibrator.vibrate(1500);
-                            vibrator = null;
-                        }
+                        playCustomAlarm();
                         stopTimer();
                         running = false;
                         stopSelf();
@@ -255,22 +259,47 @@ public class PomodoroService extends Service {
     }
 
     /**
-     * Manages alarm sound.
+     * Manages alarm.
      */
-    private void playCustomAlarmSound() {
+    private void playCustomAlarm() {
         try {
+            // Config audio manager
+            audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM);
+            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVolume, 0);
             // Gets default notification's sound URI
             Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-
-            // Creates ringtone using the URI
-            Ringtone ringtone = RingtoneManager.getRingtone(this, alarmSound);
-
-            // Plays ringtone
-            if (ringtone != null) {
-                ringtone.play();
-                Thread.sleep(2500);
-                ringtone.stop();
+            if (alarmSound == null) {
+                alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             }
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setDataSource(this, alarmSound);
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+            mediaPlayer.prepare();
+            mediaPlayer.setLooping(true);
+
+            currentVolume = 0;
+            mediaPlayer.setVolume(0, 0);
+            mediaPlayer.start();
+
+            volumeHandler = new Handler();
+            volumeRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (currentVolume < maxVolume) {
+                        currentVolume++;
+                        float volumeLevel = (float) currentVolume / maxVolume;
+                        mediaPlayer.setVolume(volumeLevel, volumeLevel);
+                        audioManager.setStreamVolume(
+                                AudioManager.STREAM_ALARM, currentVolume,0);
+                        volumeHandler.postDelayed(this, VOLUME_INCREMENT_INTERVAL);
+                        if (vibrator != null) {
+                            vibrator.vibrate(3000);
+                        }
+                    }
+                }
+            };
+            volumeHandler.post(volumeRunnable);
         } catch (Exception e) {
             Log.w("Pomodoro Service", "Error handling the sound", e);
         }
